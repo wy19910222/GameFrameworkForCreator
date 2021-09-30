@@ -5,7 +5,6 @@
 
 import {ManagerRoot} from "../Root/ManagerRoot";
 import {BaseManager} from "./BaseManager";
-import {CoroutineManager} from "./CoroutineManager";
 
 @jsClass
 export class AudioManager extends BaseManager {
@@ -21,13 +20,6 @@ export class AudioManager extends BaseManager {
 	private _musicPaused: boolean;
 	private _musicName: string;
 	private _musicId: number;
-
-	protected onLoad(): void {
-		cc.game.on(cc.game.EVENT_SHOW, this.onAudioResume, this);
-	}
-	private onAudioResume(): void {
-		CoroutineManager.instance.frameOnce(1, () => this._resume(), this);
-	}
 
 	public get soundVolume(): number {
 		return cc.audioEngine.getEffectsVolume();
@@ -82,7 +74,7 @@ export class AudioManager extends BaseManager {
 		this._soundEnabled && this.playEffectRemote(url, callback);
 	}
 
-	private playEffect(soundName: string, callback: (progress: number) => void): void {
+	public playEffect(soundName: string, callback: (progress: number) => void): void {
 		if (!soundName) {
 			console.error("Play sound error: soundName is null!");
 			return;
@@ -96,15 +88,15 @@ export class AudioManager extends BaseManager {
 		} else {
 			cc.resources.load(url, cc.AudioClip, (error, clip: cc.AudioClip) => {
 				if (!error) {
-					console.log("Play sound: " + soundName);
-					this._playEffect(soundClip, callback);
+					console.log("Play sound: " + soundName, clip);
+					this._playEffect(clip, callback);
 				} else {
 					console.error("Load sound error: " + soundName, error);
 				}
 			});
 		}
 	}
-	private playEffectRemote(url: string, callback: (progress: number) => void): void {
+	public playEffectRemote(url: string, callback: (progress: number) => void): void {
 		if (!url) {
 			console.error("Play sound error: soundName is null!");			
 			return;
@@ -169,9 +161,13 @@ export class AudioManager extends BaseManager {
 		this._resume();
 	}
 
+	public interruptedResume(): void {
+		this._resume();
+	}
+
 	private _resume(): void {
 		if (this.musicEnabled && !this._musicPaused) {
-			if (this._musicId) {
+			if (this._musicId != null) {
 				cc.audioEngine.resumeMusic();
 			} else if (this._musicName) {
 				this._playMusic();
@@ -182,7 +178,7 @@ export class AudioManager extends BaseManager {
 	public stopMusic(): void {
 		console.log("Stop music: " + this._musicName);
 		cc.audioEngine.stopMusic();
-		this._musicId = 0;
+		this._musicId = null;
 		this._musicName = null;
 		this._musicPaused = false;
 	}
