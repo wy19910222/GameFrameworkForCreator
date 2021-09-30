@@ -3,36 +3,18 @@
  * @date 2020/10/29-10:27
  */
 
-fgui.GLoader.prototype["loadExternal"] = function () {
-	var _this = this;
-	var url = this.url;
-	var callback = function (err, asset) {
-		if (_this._url != url || !cc.isValid(_this._node))
-			return;
-		if (err)
-			console.warn(err);
-		if (asset instanceof cc.SpriteFrame)
-			_this.onExternalLoadSuccess(asset);
-		else if (asset instanceof cc.Texture2D)
-			_this.onExternalLoadSuccess(new cc.SpriteFrame(asset));
-	};
-	if (fgui.ToolSet.startsWith(this._url, "http://")
-		|| fgui.ToolSet.startsWith(this._url, "https://")
-		|| fgui.ToolSet.startsWith(this._url, '/'))
-		//#region modify 修复装载器不能装在无扩展名的远端图片url
-		if (cc.assetManager.assets.has(this._url)) {
-			let asset = cc.assetManager.assets.get(this._url);
-			asset instanceof cc.Asset && asset.addRef();
-			requestAnimationFrame(() => {
-				asset instanceof cc.Asset && asset.decRef.call(asset, false);
-				callback(null, asset);
-			});
-		} else {
-			cc.assetManager.loadRemote(this._url, {ext: ".png"}, callback);
+fgui.UIPackage.prototype.dispose = function () {
+	var cnt = this._items.length;
+	for (var i = 0; i < cnt; i++) {
+		var pi = this._items[i];
+		if (pi.asset)
+			cc.assetManager.releaseAsset(pi.asset);
+		//#region add 修复包内只被没加载过的元件引用的资源不会被释放的问题
+		else if (pi.file) {
+			cc.resources.release(pi.file);
 		}
 		//#endregion
-	else
-		cc.resources.load(this._url, cc.Asset, callback);
+	}
 };
 
 fgui.GLoader.prototype["updateLayout"] = function () {
@@ -141,7 +123,7 @@ Object.defineProperty(fgui.GGraph.prototype, "alpha", {
 			this.updateGear(3);
 		}
 	},
-	enumerable: true,
+	enumerable: false,
 	configurable: true
 });
 //#endregion

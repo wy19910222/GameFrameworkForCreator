@@ -361,6 +361,67 @@ fgui.GRoot.prototype.playOneShotSound = function (clip, volumeScale) {
 	this.muted || playOneShotSound.call(this, clip, volumeScale);	// modify
 };
 
+
+declare namespace fgui {
+	interface GLoader {
+		loadingExternal: boolean;		// 为GLoader新增外部加载状态
+	}
+}
+//#region add 外部加载状态
+Object.defineProperty(fgui.GLoader.prototype, "loadingExternal", {
+	get: function () {
+		return this._loadingExternal;
+	},
+	enumerable: false,
+	configurable: true
+});
+//#endregion
+fgui.GLoader.prototype["loadExternal"] = function () {
+	//#region add 外部加载状态
+	this._loadingExternal = true;
+	//#endregion
+
+	var _this = this;
+	var url = this.url;
+	var callback = function (err, asset) {
+		if (_this._url != url || !cc.isValid(_this._node))
+			return;
+		if (err)
+			console.warn(err);
+		if (asset instanceof cc.SpriteFrame)
+			_this.onExternalLoadSuccess(asset);
+		else if (asset instanceof cc.Texture2D)
+			_this.onExternalLoadSuccess(new cc.SpriteFrame(asset));
+
+		//#region add 外部加载状态
+		_this._loadingExternal = false;
+		//#endregion
+	};
+	if (fgui.ToolSet.startsWith(this._url, "http://")
+		|| fgui.ToolSet.startsWith(this._url, "https://")
+		|| fgui.ToolSet.startsWith(this._url, '/'))
+		//#region modify 修复装载器不能装载无扩展名的远端图片url
+		if (cc.assetManager.assets.has(this._url)) {
+			let asset = cc.assetManager.assets.get(this._url);
+			asset instanceof cc.Asset && asset.addRef();
+			requestAnimationFrame(() => {
+				asset instanceof cc.Asset && asset.decRef.call(asset, false);
+				callback(null, asset);
+			});
+		} else {
+			cc.assetManager.loadRemote(this._url, {ext: ".png"}, callback);
+		}
+		//#endregion
+	else
+		cc.resources.load(this._url, cc.Asset, callback);
+};
+
+fgui.GLoader.prototype["freeExternal"] = function (texture) {
+	//#region add 释放图片资源
+	cc.assetManager.releaseAsset(texture);
+	//#endregion
+};
+
 // // 针对圆角头像的优化，复制头像并将四个角变透明而不是用遮罩
 // declare namespace fgui {
 // 	interface GObject {
