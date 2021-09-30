@@ -472,6 +472,7 @@ export class UIManager extends BaseManager {
 	 * 加载描述文件和FairyGUI包依赖的资源（图集和音效）
 	 */
 	public async loadPkg(pkgNames: string[], progress?: (finish: number, total: number) => void): Promise<void> {
+		console.log(`Load package: [${pkgNames.join(", ")}]`);
 		let pkgs = await this.loadPkgBin(pkgNames, null).catch(reason => {
 			console.error(`Load package binary error: [${pkgNames.join(", ")}]`, reason);
 			throw reason;
@@ -481,6 +482,7 @@ export class UIManager extends BaseManager {
 			console.error(`Load package resource error: [${pkgNames.join(", ")}]`, reason);
 			throw reason;
 		});
+		console.log(`Load package: [${pkgNames.join(", ")}] succeed!`);
 	}
 
 	/**
