@@ -117,7 +117,7 @@ Object.trim = function (obj, deletedKeys) {
 	return obj;
 };
 
-Object.slice = function (obj, keys) {
+Object.pick = function (obj, keys) {
 	let newObj = {};
 	keys && keys.forEach(key => newObj[key] = obj[key]);
 	return newObj;
