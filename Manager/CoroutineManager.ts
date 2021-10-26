@@ -314,12 +314,12 @@ export class CoroutineManager extends BaseManager {
 			this.stopCo(iteratorOrCoroutine);
 			let hasNext = true;
 			let steps = 0;
-			while (hasNext && (steps < maxSteps)) {
+			while (hasNext && steps < maxSteps) {
 				hasNext = !iteratorOrCoroutine.next().done;
 				++steps;
 			}
 			if (steps >= maxSteps) {
-				console.warn("Flush " + maxSteps + " steps!");
+				console.warn("Flush " + steps + " steps!");
 			}
 		}
 	}
