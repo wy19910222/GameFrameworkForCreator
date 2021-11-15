@@ -418,7 +418,7 @@ fgui.GLoader.prototype["loadExternal"] = function () {
 
 fgui.GLoader.prototype["freeExternal"] = function (texture) {
 	//#region add 释放图片资源
-	cc.assetManager.releaseAsset(texture);
+	cc.assetManager.releaseAsset(texture.getTexture());
 	//#endregion
 };
 
