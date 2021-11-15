@@ -365,12 +365,25 @@ fgui.GRoot.prototype.playOneShotSound = function (clip, volumeScale) {
 declare namespace fgui {
 	interface GLoader {
 		loadingExternal: boolean;		// 为GLoader新增外部加载状态
+		autoRelease: boolean;		// 自动释放远程图片资源
 	}
 }
 //#region add 外部加载状态
 Object.defineProperty(fgui.GLoader.prototype, "loadingExternal", {
 	get: function () {
 		return this._loadingExternal;
+	},
+	enumerable: false,
+	configurable: true
+});
+//#endregion
+//#region add 外部加载状态
+Object.defineProperty(fgui.GLoader.prototype, "autoRelease", {
+	get: function () {
+		return this._autoRelease;
+	},
+	set: function (value) {
+		this._autoRelease = value;
 	},
 	enumerable: false,
 	configurable: true
@@ -418,7 +431,7 @@ fgui.GLoader.prototype["loadExternal"] = function () {
 
 fgui.GLoader.prototype["freeExternal"] = function (texture) {
 	//#region add 释放图片资源
-	cc.assetManager.releaseAsset(texture.getTexture());
+	this._autoRelease && cc.assetManager.releaseAsset(texture.getTexture());
 	//#endregion
 };
 
