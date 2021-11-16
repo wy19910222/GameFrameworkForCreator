@@ -377,7 +377,7 @@ Object.defineProperty(fgui.GLoader.prototype, "loadingExternal", {
 	configurable: true
 });
 //#endregion
-//#region add 外部加载状态
+//#region add 是否自动释放远程图片资源
 Object.defineProperty(fgui.GLoader.prototype, "autoRelease", {
 	get: function () {
 		return this._autoRelease;
