@@ -135,11 +135,12 @@ declare namespace wx {
 		platform: string;	// 客户端平台
 		fontSizeSetting: number;	// 用户字体大小（单位px）。以微信客户端「我-设置-通用-字体大小」中的设置为准
 		SDKVersion: string;	// 客户端基础库版本
+		// https://developers.weixin.qq.com/minigame/dev/guide/performance/perf-benchmarkLevel.html
 		benchmarkLevel?: number;	// 设备性能等级（仅Android小游戏）。取值为：-2 或 0（该设备无法运行小游戏），-1（性能未知），>=1（设备性能值，该值越高，设备性能越好，目前最高不到50）
 		batteryLevel?: number;	// 电池电量
 		devicePixelRatio?: number;
 	}
-	// https://developers.weixin.qq.com/minigame/dev/api/base/system/system-info/wx.getSystemInfoSync.html
+	// https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfoSync.html
 	function getSystemInfoSync(): SystemInfo;
 
 	interface AppShowOptions {
@@ -303,14 +304,13 @@ declare namespace wx {
 	// https://developers.weixin.qq.com/minigame/dev/api/open-api/context/wx.getOpenDataContext.html
 	function getOpenDataContext(): OpenDataContext;
 
+	// https://developers.weixin.qq.com/minigame/dev/api/open-api/data/KVData.html
 	interface KVData {
 		key: string;
 		value: string;
 	}
-	interface SetUserCloudStorageObject extends WXCallObject<{}> {
-		KVDataList: KVData[];
-	}
-	function setUserCloudStorage(object: SetUserCloudStorageObject);
+	// https://developers.weixin.qq.com/minigame/dev/api/open-api/data/wx.setUserCloudStorage.html
+	function setUserCloudStorage(object: {KVDataList: KVData[]} & WXCallObject<{}>);
 
 	// https://developers.weixin.qq.com/minigame/dev/api/BannerAd.html
 	interface bannerStyle {
@@ -903,7 +903,17 @@ declare namespace wx {
 	}
 	function requestSubscribeMessage(object: SubscribeObject): void;
 
-	// https://developers.weixin.qq.com/minigame/dev/api/base/app/touch-event/Touch.html
+	// https://developers.weixin.qq.com/community/develop/doc/000ecccb440220c39a5a67dfe5b409
+	// msgType: 1-游戏更新提醒，目前只有这种类型
+	// confirm: 取消的时候走success回调且confirm为false
+	// errCode: 1-系统错误, 2-用户已订阅该类型消息, 3-超过频率限制,暂时不允许发起订阅, 4-没有权限或已封禁
+	function requestSubscribeWhatsNew(object: { msgType: number } & WXCallObject<{ confirm: boolean }>): void;
+	// https://developers.weixin.qq.com/community/develop/doc/000ecccb440220c39a5a67dfe5b409
+	// msgType: 1-游戏更新提醒，目前只有这种类型
+	// status: 1-未订阅,可以发起订阅, 2-用户已订阅该类型消息, 3-超过频率限制,暂时不允许发起订阅, 4-没有权限或已封禁
+	function getWhatsNewSubscriptionsSetting(object: { msgType: number } & WXCallObject<{ status: number }>): void;
+
+	// https://developers.weixin.qq.com/minigame/dev/api/device/touch-event/Touch.html
 	interface Touch {
 		identifier: number;
 		pageX: number;
@@ -911,8 +921,24 @@ declare namespace wx {
 		clientX: number;
 		clientY: number;
 	}
-	function onTouchEnd(callback: (res: { touches: Touch[], changedTouches: Touch[], timeStamp: number }) => void): void;
-	function offTouchEnd(callback: (res: { touches: Touch[], changedTouches: Touch[], timeStamp: number }) => void): void;
+	interface TouchEvent {
+		type: "touchstart" | "touchmove" | "touchend" | "touchcancel";
+		touches: Touch[];
+		changedTouches: Touch[];
+		timeStamp: number;
+	}
+	// https://developers.weixin.qq.com/minigame/dev/api/device/touch-event/wx.onTouchStart.html
+	function onTouchStart(callback: (event: TouchEvent) => void): void;
+	function offTouchStart(callback: (event: TouchEvent) => void): void;
+	// https://developers.weixin.qq.com/minigame/dev/api/device/touch-event/wx.onTouchMove.html
+	function onTouchMove(callback: (event: TouchEvent) => void): void;
+	function offTouchMove(callback: (event: TouchEvent) => void): void;
+	// https://developers.weixin.qq.com/minigame/dev/api/device/touch-event/wx.onTouchEnd.html
+	function onTouchEnd(callback: (event: TouchEvent) => void): void;
+	function offTouchEnd(callback: (event: TouchEvent) => void): void;
+	// https://developers.weixin.qq.com/minigame/dev/api/device/touch-event/wx.onTouchCancel.html
+	function onTouchCancel(callback: (event: TouchEvent) => void): void;
+	function offTouchCancel(callback: (event: TouchEvent) => void): void;
 
 	interface GridAdStyle {
 		left?: number,//	grid(格子) 广告组件的左上角横坐标
@@ -945,7 +971,10 @@ declare namespace wx {
 	}
 	function createGridAd(object: GridAdObj): GridAd;
 
-	function setMessageToFriendQuery({shareMessageToFriendScene: number});
+	// https://developers.weixin.qq.com/minigame/dev/api/share/wx.setMessageToFriendQuery.html
+	function setMessageToFriendQuery({shareMessageToFriendScene: number}): boolean;
+	// https://developers.weixin.qq.com/minigame/dev/api/share/wx.onShareMessageToFriend.html
+	function onShareMessageToFriend(callback: (res: {success: boolean, errMsg: string}) => void): void;
 
 	// wifi wifi网络
 	// 2g 2g网络
@@ -1061,6 +1090,7 @@ declare namespace wx {
 		src: string;	//	图片的 URL
 		width: number;	// 图片的真实宽度
 		height: number;	// 图片的真实高度
+		complete: boolean;	// 是否加载完成
 		onload: (event: Event) => void;	// 图片加载完成后触发的回调函数
 		onerror: (event: Event) => void;//	图片加载发生错误后触发的回调函数
 	}
@@ -1138,6 +1168,15 @@ declare namespace wx {
 	}
 	// https://developers.weixin.qq.com/minigame/dev/api/media/image/wx.previewImage.html
 	function previewImage(object: PreviewImageObject): void;
+
+	// https://developers.weixin.qq.com/minigame/dev/api/game-server-manager/wx.getGameServerManager.html
+	function getGameServerManager(): GameServerManager;
+	// https://developers.weixin.qq.com/minigame/dev/api/game-server-manager/GameServerManager.html
+	interface GameServerManager {
+		// https://developers.weixin.qq.com/minigame/dev/api/game-server-manager/GameServerManager.setState.html
+		// userState 该玩家的自定义状态信息，长度限制为 256 个字符
+		setState(object: {userState: string} & WXCallObject<{}>): Promise<void>;
+	}
 }
 
 declare const __wxConfig: wx.WXConfig;
