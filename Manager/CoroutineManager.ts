@@ -553,6 +553,7 @@ export class CoroutineManager extends BaseManager {
 	/**
 	 * 等待帧率稳定后执行回调，也可以在迭代器中 yield 返回的协程对象，用于等待帧率稳定
 	 * 帧率稳定的定义：最近若干帧（3帧）帧间隔的方差小于一定阈值（0.00001）
+	 * 由于帧率可能会一直不稳定，所以用一个最大帧数（20）来避免协程一直在等待中
 	 * @param callback - 需要执行的回调
 	 * @param owner - 协程的拥有者，可以通过它来批量结束协程
 	 * @return 协程对象
