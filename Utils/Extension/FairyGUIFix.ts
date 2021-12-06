@@ -223,7 +223,7 @@ fgui.GTextField.prototype["handleGrayedChanged"] = function () {
 		}
 		material = this._spriteMaterial;
 	}
-	this._label.setMaterial(0, material);
+	this._label && this._label.setMaterial(0, material);
 	//#endregion
 };
 
