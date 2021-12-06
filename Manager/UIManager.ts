@@ -463,7 +463,7 @@ export class UIManager extends BaseManager {
 
 //#region Load package
 	private loadDefaultTexture(): void {
-		cc.resources.load("ui/DefaultTexture", cc.Texture2D, (error, texture: cc.Texture2D) => {
+		cc.resources.load(`${this.DIR_UI}/DefaultTexture`, cc.Texture2D, (error, texture: cc.Texture2D) => {
 			error || (fgui.UIPackage.defaultTexture = texture);
 		});
 	}
