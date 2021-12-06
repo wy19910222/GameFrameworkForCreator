@@ -97,12 +97,25 @@ export abstract class BaseUI extends cc.Component {
 
 	//#region Override is not necessary
 	public static uiBind(): void {
+		let extPkgNames = this.getExtPkgNames();
+		for (const extPkgName of extPkgNames) {
+			try {
+				let binder: { default: { bindAll: () => void } } = require(extPkgName + "Binder");
+				binder && binder.default.bindAll();
+			} catch (e) {
+				console.warn(`${extPkgName} bind failed:`, e);
+			}
+		}
 		let pkgName = this.getPkgName();
 		try {
 			let binder: { default: { bindAll: () => void } } = require(pkgName + "Binder");
-			binder.default.bindAll();
+			if (binder) {
+				binder.default.bindAll();
+			} else {
+				console.warn(`${pkgName} has no binder.`);
+			}
 		} catch (e) {
-			console.warn(`${pkgName} has no binder:`, e);
+			console.warn(`${pkgName} bind failed:`, e);
 		}
 	}
 
@@ -120,7 +133,7 @@ export abstract class BaseUI extends cc.Component {
 	 * Name of main component
 	 */
 	public static getCompName(): string {
-		return "MainPanel";
+		return "View";
 	}
 
 	//#endregion
